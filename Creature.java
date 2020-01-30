@@ -1,58 +1,56 @@
 import java.util.ArrayList;
-import java.util.ArrayList;
-import java.util.ArrayList;
 
 public class Creature
 {
-    private int energy;
+    private int maxEnergy;
     private int speed;
     private int x;
     private int y;
     private Field field;
     private int eaten;
     
-    public Creature(int speed, int energy, Field field)
+    public Creature(int speed, int maxEnergy, Field field)
     {
         this.speed = speed;
-        this.energy = energy;
+        this.maxEnergy = maxEnergy;
         this.field = field;
-        eaten = 0;
+        this.eaten = 0;
                 
         if((int)(Math.random() *2) < 1)
         {
             if((int)(Math.random() *2) < 1) //broken
             {
-                x = 0;
-                y = (int)(Math.random() * field.findFieldSize());
+                this.x = 0;
+                this.y = (int)(Math.random() * field.findFieldSize());
             }
             else
             {
-                x = field.findFieldSize();
-                y = (int)(Math.random() * field.findFieldSize());
+                this.x = field.findFieldSize();
+                this.y = (int)(Math.random() * field.findFieldSize());
             }
         }
         else
         {
             if((int)(Math.random() *2) < 1)
             {
-                y = 0;
-                x = (int)(Math.random() * field.findFieldSize());
+                this.y = 0;
+                this.x = (int)(Math.random() * field.findFieldSize());
             }
             else
             {
-                y = field.findFieldSize();
-                x = (int)(Math.random() * field.findFieldSize());
+                this.y = field.findFieldSize();
+                this.x = (int)(Math.random() * field.findFieldSize());
             }
         }
     }
     
     public String info()
     {
-        return "Pos: " + x + "," + y + "\nEnergy: " + energy + "\nSpeed: " + speed  + "\nFoodNum: " + eaten + "\n";
+        return "Pos: " + x + "," + y + "\nEnergy: " + maxEnergy + "\nSpeed: " + speed  + "\nFoodNum: " + eaten + "\n";
     }
     public int time()
     {
-        return energy/(speed*speed);
+        return maxEnergy/(speed*speed);
     }
     
     public boolean detectFood()
@@ -80,6 +78,13 @@ public class Creature
                 eaten++;
             }
         }
+        for(int j = 0; j < field.retFood().size(); j ++)
+                {
+                    if(field.retFood().get(j).alive()==false)
+                    {
+                        field.removeFood(field.retFood().get(j));
+                    }
+                }
     }
     
     public boolean available(String direction)
@@ -109,70 +114,122 @@ public class Creature
         {
             if(x+1 > field.findFieldSize())
             {
-                System.out.println("RIGHT AVAILABLE ");return false;
-                
+                return false;
             }
         }
         return true;
     }
-    public void move()
+    public void reset()
     {
-        int direction = (int)(4 * Math.random());
-        for(int i = 0; i < speed; i ++)
+        if((int)(Math.random() *2) < 1)
         {
-            if(detectFood())
+            if((int)(Math.random() *2) < 1) //broken
             {
-                ArrayList<Food> food = field.retFood();
-                System.out.println("MOVING TO FOOD, I AM AT: "+ x+","+y);
-                for(Food f : food)
-                {
-                    if(f.x()-x==-1)
-                    {
-                        x--;
-                    }
-                    else if(f.x()-x==1)
-                    {
-                        x+=1;
-                        System.out.println("RIGHT MOVE F ");
-                    }
-                    else if(f.y()-y==-1)
-                    {
-                        y--;
-                    }
-                    else if(f.y()-y==1)
-                    {
-                        y++;
-                    }
-                    
-                }
+                x = 0;
+                y = (int)(Math.random() * field.findFieldSize());
             }
             else
             {
-                    if(direction == 0 && available("up"))
+                x = field.findFieldSize();
+                y = (int)(Math.random() * field.findFieldSize());
+            }
+        }
+        else
+        {
+            if((int)(Math.random() *2) < 1)
+            {
+                y = 0;
+                x = (int)(Math.random() * field.findFieldSize());
+            }
+            else
+            {
+                y = field.findFieldSize();
+                x = (int)(Math.random() * field.findFieldSize());
+            }
+        }
+        eaten = 0;
+    }
+    public void move()
+    {
+        int direction = (int)(4 * Math.random());
+        int energy = maxEnergy;
+        while(energy > 0)
+        {
+            energy -= speed*speed;
+            direction = (int)(4 * Math.random());
+            for(int i = 0; i < speed; i ++)
+            {
+                    if(detectFood())
                 {
-                    y++;
-                }
-                else if(direction == 1 && available("down"))
-                {
-                    y--;
-                }
-                else if(direction == 2 && available("left"))
-                {
-                    x--;
-                }
-                else if(direction == 3 && available("right"))
-                {
-                    x++;
-                    System.out.println("RIGHT MOVE R ");
+                    ArrayList<Food> food = field.retFood();
+                    System.out.println("MOVING TO FOOD, I AM AT: "+ x+","+y);
+                    for(Food f : food)
+                    {
+                        if(f.x()-x==-1)
+                        {
+                            x--;
+                            break;
+                        }
+                        else if(f.x()-x==1)
+                        {
+                            x++;
+                            break;
+                        }
+                        else if(f.y()-y==-1)
+                        {
+                            y--;
+                            break;
+                        }
+                        else if(f.y()-y==1)
+                        {
+                            y++;
+                            break;
+                        }
+                        
+                    }
+                    onFood();
+                    
                 }
                 else
                 {
-                    i--;
-                    direction = (int)(4 * Math.random());
+                        if(direction == 0 && available("up"))
+                    {
+                        y++;
+                    }
+                    else if(direction == 1 && available("down"))
+                    {
+                        y--;
+                    }
+                    else if(direction == 2 && available("left"))
+                    {
+                        x--;
+                    }
+                    else if(direction == 3 && available("right"))
+                    {
+                        x++;
+                    }
+                    else
+                    {
+                        direction = (int)(4 * Math.random());
+                    }
                 }
             }
+            
+            
             //onFood();
         }
-        energy -= speed*speed;
+
+    }
+    public Creature replicate()
+    {
+        if(eaten >= 2)
+        {
+            if((int)(Math.random()*100) >= 80)
+            {
+                return new Creature( speed,maxEnergy+50, field);
+            }
+            return new Creature( speed,maxEnergy, field);
+        }
+        else{return null;}
     }
 }
